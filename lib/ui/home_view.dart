@@ -15,10 +15,10 @@ class HomeView extends StatefulWidget {
   final List<CameraDescription> cameras;
 
   @override
-  _HomeViewState createState() => _HomeViewState();
+  HomeViewState createState() => HomeViewState();
 }
 
-class _HomeViewState extends State<HomeView> {
+class HomeViewState extends State<HomeView> {
   /// Results to draw bounding boxes
   List<Recognition>? results;
 
@@ -49,7 +49,7 @@ class _HomeViewState extends State<HomeView> {
           Align(
             alignment: Alignment.topLeft,
             child: Container(
-              padding: EdgeInsets.only(top: 20),
+              padding: const EdgeInsets.only(top: 20),
               child: Text(
                 'Object Detection Flutter',
                 textAlign: TextAlign.left,
@@ -80,7 +80,7 @@ class _HomeViewState extends State<HomeView> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.keyboard_arrow_up,
+                        const Icon(Icons.keyboard_arrow_up,
                             size: 48, color: Colors.orange),
                         (stats != null)
                             ? Padding(

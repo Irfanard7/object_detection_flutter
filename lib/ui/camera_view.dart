@@ -82,21 +82,21 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
     await cameraController.initialize();
 
     // Stream of image passed to [onLatestImageAvailable] callback
-    // await cameraController?.startImageStream(onLatestImageAvailable);
+    await cameraController.startImageStream(onLatestImageAvailable);
 
     /// previewSize is size of each image frame captured by controller
     ///
     /// 352x288 on iOS, 240p (320x240) on Android with ResolutionPreset.low
-    // Size? previewSize = cameraController.value.previewSize;
+    Size? previewSize = cameraController.value.previewSize;
 
     /// previewSize is size of raw input image to the model
-    // CameraViewSingleton.inputImageSize = previewSize;
+    CameraViewSingleton.inputImageSize = previewSize;
 
     // the display width of image on screen is
     // same as screenWidth while maintaining the aspectRatio
-    // Size screenSize = MediaQuery.of(context).size;
-    // CameraViewSingleton.screenSize = screenSize;
-    // CameraViewSingleton.ratio = screenSize.width / (previewSize?.height ?? 1);
+    Size screenSize = MediaQuery.of(context).size;
+    CameraViewSingleton.screenSize = screenSize;
+    CameraViewSingleton.ratio = screenSize.width / (previewSize?.height ?? 1);
   }
 
   @override

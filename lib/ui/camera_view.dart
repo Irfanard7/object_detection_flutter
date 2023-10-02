@@ -36,13 +36,14 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
   late CameraController cameraController;
 
   /// true when inference is ongoing
-  // bool predicting;
+  /// Initially predicting = false
+  bool predicting = false;
 
   /// Instance of [Classifier]
-  // Classifier classifier;
+  late Classifier classifier;
 
   /// Instance of [IsolateUtils]
-  // IsolateUtils isolateUtils;
+  late IsolateUtils isolateUtils;
 
   /// Camera Initializer
   late Future<void> _initializeCameraFuture;
@@ -51,22 +52,15 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     initializeCamera();
-  }
 
-  void initStateAsync() async {
     WidgetsBinding.instance.addObserver(this);
 
-    // Spawn a new isolate
-    // isolateUtils = IsolateUtils();
-    // await isolateUtils.start();
-
-    // Camera initialization
-
     // Create an instance of classifier to load model and labels
-    // classifier = Classifier();
+    classifier = Classifier();
 
-    // Initially predicting = false
-    // predicting = false;
+    // Spawn a new isolate
+    isolateUtils = IsolateUtils();
+    isolateUtils.start();
   }
 
   void initializeCamera() {
@@ -117,64 +111,64 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
 
   /// Callback to receive each frame [CameraImage] perform inference on it
   onLatestImageAvailable(CameraImage cameraImage) async {
-    // if (classifier.interpreter != null && classifier.labels != null) {
-    //   // If previous inference has not completed then return
-    //   if (predicting) {
-    //     return;
-    //   }
+    if (classifier.interpreter != null && classifier.labels != null) {
+      // If previous inference has not completed then return
+      if (predicting) {
+        return;
+      }
 
-    //   setState(() {
-    //     predicting = true;
-    //   });
+      setState(() {
+        predicting = true;
+      });
 
-    //   var uiThreadTimeStart = DateTime.now().millisecondsSinceEpoch;
+      var uiThreadTimeStart = DateTime.now().millisecondsSinceEpoch;
 
-    //   // Data to be passed to inference isolate
-    //   var isolateData = IsolateData(
-    //       cameraImage, classifier.interpreter.address, classifier.labels);
+      // Data to be passed to inference isolate
+      var isolateData = IsolateData(
+          cameraImage, classifier.interpreter!.address, classifier.labels!);
 
-    //   // We could have simply used the compute method as well however
-    //   // it would be as in-efficient as we need to continuously passing data
-    //   // to another isolate.
+      // We could have simply used the compute method as well however
+      // it would be as in-efficient as we need to continuously passing data
+      // to another isolate.
 
-    //   /// perform inference in separate isolate
-    //   Map<String, dynamic> inferenceResults = await inference(isolateData);
+      /// perform inference in separate isolate
+      Map<String, dynamic> inferenceResults = await inference(isolateData);
 
-    //   var uiThreadInferenceElapsedTime =
-    //       DateTime.now().millisecondsSinceEpoch - uiThreadTimeStart;
+      var uiThreadInferenceElapsedTime =
+          DateTime.now().millisecondsSinceEpoch - uiThreadTimeStart;
 
-    //   // pass results to HomeView
-    //   widget.resultsCallback(inferenceResults["recognitions"]);
+      // pass results to HomeView
+      widget.resultsCallback(inferenceResults["recognitions"]);
 
-    //   // pass stats to HomeView
-    //   widget.statsCallback((inferenceResults["stats"] as Stats)
-    //     ..totalElapsedTime = uiThreadInferenceElapsedTime);
+      // pass stats to HomeView
+      widget.statsCallback((inferenceResults["stats"] as Stats)
+        ..totalElapsedTime = uiThreadInferenceElapsedTime);
 
-    //   // set predicting to false to allow new frames
-    //   setState(() {
-    //     predicting = false;
-    //   });
-    // }
+      // set predicting to false to allow new frames
+      setState(() {
+        predicting = false;
+      });
+    }
   }
 
   /// Runs inference in another isolate
-  // Future<Map<String, dynamic>> inference(IsolateData isolateData) async {
-  //   ReceivePort responsePort = ReceivePort();
-  //   isolateUtils.sendPort
-  //       .send(isolateData..responsePort = responsePort.sendPort);
-  //   var results = await responsePort.first;
-  //   return results;
-  // }
+  Future<Map<String, dynamic>> inference(IsolateData isolateData) async {
+    ReceivePort responsePort = ReceivePort();
+    isolateUtils.sendPort
+        .send(isolateData..responsePort = responsePort.sendPort);
+    var results = await responsePort.first;
+    return results;
+  }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     switch (state) {
       case AppLifecycleState.paused:
-        // cameraController?.stopImageStream();
+        cameraController.stopImageStream();
         break;
       case AppLifecycleState.resumed:
-        if (!(cameraController?.value.isStreamingImages ?? false)) {
-          // await cameraController?.startImageStream(onLatestImageAvailable);
+        if (!cameraController.value.isStreamingImages) {
+          await cameraController.startImageStream(onLatestImageAvailable);
         }
         break;
       default:
@@ -184,7 +178,7 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    cameraController?.dispose();
+    cameraController.dispose();
     super.dispose();
   }
 }

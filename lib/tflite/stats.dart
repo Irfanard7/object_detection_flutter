@@ -14,10 +14,10 @@ class Stats {
   int preProcessingTime;
 
   Stats(
-      [this.totalPredictTime = 0,
+      {this.totalPredictTime = 0,
       this.totalElapsedTime = 0,
       this.inferenceTime = 0,
-      this.preProcessingTime = 0]);
+      this.preProcessingTime = 0});
 
   @override
   String toString() {

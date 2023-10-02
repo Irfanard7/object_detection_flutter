@@ -1,5 +1,4 @@
 import 'package:camera/camera.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:object_detection/tflite/recognition.dart';
 import 'package:object_detection/tflite/stats.dart';
@@ -21,10 +20,10 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   /// Results to draw bounding boxes
-  List<Recognition> results = List.empty();
+  List<Recognition>? results;
 
   /// Realtime stats
-  Stats stats = Stats();
+  Stats? stats;
 
   /// Scaffold Key
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey();
@@ -44,7 +43,7 @@ class _HomeViewState extends State<HomeView> {
           ),
 
           // Bounding boxes
-          // boundingBoxes(results),
+          boundingBoxes(results),
 
           // Heading
           Align(
@@ -89,13 +88,13 @@ class _HomeViewState extends State<HomeView> {
                                 child: Column(
                                   children: [
                                     StatsRow('Inference time:',
-                                        '${stats.inferenceTime} ms'),
+                                        '${stats?.inferenceTime} ms'),
                                     StatsRow('Total prediction time:',
-                                        '${stats.totalElapsedTime} ms'),
+                                        '${stats?.totalElapsedTime} ms'),
                                     StatsRow('Pre-processing time:',
-                                        '${stats.preProcessingTime} ms'),
-                                    // StatsRow('Frame',
-                                    //     '${CameraViewSingleton.inputImageSize?.width} X ${CameraViewSingleton.inputImageSize?.height}'),
+                                        '${stats?.preProcessingTime} ms'),
+                                    StatsRow('Frame',
+                                        '${CameraViewSingleton.inputImageSize?.width ?? 0} X ${CameraViewSingleton.inputImageSize?.height ?? 0}'),
                                   ],
                                 ),
                               )
@@ -113,18 +112,18 @@ class _HomeViewState extends State<HomeView> {
   }
 
   /// Returns Stack of bounding boxes
-  // Widget boundingBoxes(List<Recognition> results) {
-  //   if (results == null) {
-  //     return Container();
-  //   }
-  //   return Stack(
-  //     children: results
-  //         .map((e) => BoxWidget(
-  //               result: e,
-  //             ))
-  //         .toList(),
-  //   );
-  // }
+  Widget boundingBoxes(List<Recognition>? results) {
+    if (results == null) {
+      return Container();
+    }
+    return Stack(
+      children: results
+          .map((e) => BoxWidget(
+                result: e,
+              ))
+          .toList(),
+    );
+  }
 
   /// Callback to get inference results from [CameraView]
   void resultsCallback(List<Recognition> results) {

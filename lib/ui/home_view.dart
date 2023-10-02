@@ -1,3 +1,4 @@
+import 'package:camera/camera.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:object_detection/tflite/recognition.dart';
@@ -9,6 +10,11 @@ import 'camera_view.dart';
 
 /// [HomeView] stacks [CameraView] and [BoxWidget]s with bottom sheet for stats
 class HomeView extends StatefulWidget {
+  const HomeView({super.key, required this.cameras});
+
+  /// List of available cameras
+  final List<CameraDescription> cameras;
+
   @override
   _HomeViewState createState() => _HomeViewState();
 }
@@ -31,7 +37,11 @@ class _HomeViewState extends State<HomeView> {
       body: Stack(
         children: <Widget>[
           // Camera View
-          // CameraView(resultsCallback, statsCallback),
+          CameraView(
+            resultsCallback: resultsCallback,
+            statsCallback: statsCallback,
+            cameras: widget.cameras,
+          ),
 
           // Bounding boxes
           // boundingBoxes(results),

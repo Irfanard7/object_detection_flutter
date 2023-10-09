@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:isolate';
 
 import 'package:camera/camera.dart';
@@ -12,7 +11,7 @@ import 'package:object_detection/utils/isolate_utils.dart';
 /// [CameraView] sends each frame for inference
 class CameraView extends StatefulWidget {
   /// Callback to pass results after inference to [HomeView]
-  final Function(List<Recognition> recognitions) resultsCallback;
+  final Function(Recognition? recognitions) resultsCallback;
 
   /// Callback to inference stats to [HomeView]
   final Function(Stats stats) statsCallback;
@@ -132,16 +131,16 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
       // to another isolate.
 
       /// perform inference in separate isolate
-      Map<String, dynamic> inferenceResults = await inference(isolateData);
+      (Recognition, Stats)? inferenceResults = await inference(isolateData);
 
       var uiThreadInferenceElapsedTime =
           DateTime.now().millisecondsSinceEpoch - uiThreadTimeStart;
 
       // pass results to HomeView
-      widget.resultsCallback(inferenceResults["recognitions"]);
+      widget.resultsCallback(inferenceResults?.$1);
 
       // pass stats to HomeView
-      widget.statsCallback((inferenceResults["stats"] as Stats)
+      widget.statsCallback((inferenceResults?.$2 ?? Stats())
         ..totalElapsedTime = uiThreadInferenceElapsedTime);
 
       // set predicting to false to allow new frames
@@ -152,7 +151,7 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
   }
 
   /// Runs inference in another isolate
-  Future<Map<String, dynamic>> inference(IsolateData isolateData) async {
+  Future<(Recognition, Stats)?> inference(IsolateData isolateData) async {
     ReceivePort responsePort = ReceivePort();
     isolateUtils.sendPort
         .send(isolateData..responsePort = responsePort.sendPort);

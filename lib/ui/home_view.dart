@@ -2,7 +2,6 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:object_detection/tflite/recognition.dart';
 import 'package:object_detection/tflite/stats.dart';
-import 'package:object_detection/ui/box_widget.dart';
 import 'package:object_detection/ui/camera_view_singleton.dart';
 
 import 'camera_view.dart';
@@ -20,7 +19,7 @@ class HomeView extends StatefulWidget {
 
 class HomeViewState extends State<HomeView> {
   /// Results to draw bounding boxes
-  List<Recognition>? results;
+  Recognition? results;
 
   /// Realtime stats
   Stats? stats;
@@ -41,9 +40,6 @@ class HomeViewState extends State<HomeView> {
             statsCallback: statsCallback,
             cameras: widget.cameras,
           ),
-
-          // Bounding boxes
-          boundingBoxes(results),
 
           // Heading
           Align(
@@ -87,6 +83,7 @@ class HomeViewState extends State<HomeView> {
                                 padding: const EdgeInsets.all(8.0),
                                 child: Column(
                                   children: [
+                                    StatsRow('Result:', results?.result ?? "-"),
                                     StatsRow('Inference time:',
                                         '${stats?.inferenceTime} ms'),
                                     StatsRow('Total prediction time:',
@@ -111,22 +108,8 @@ class HomeViewState extends State<HomeView> {
     );
   }
 
-  /// Returns Stack of bounding boxes
-  Widget boundingBoxes(List<Recognition>? results) {
-    if (results == null) {
-      return Container();
-    }
-    return Stack(
-      children: results
-          .map((e) => BoxWidget(
-                result: e,
-              ))
-          .toList(),
-    );
-  }
-
   /// Callback to get inference results from [CameraView]
-  void resultsCallback(List<Recognition> results) {
+  void resultsCallback(Recognition? results) {
     setState(() {
       this.results = results;
     });

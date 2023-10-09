@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:camera/camera.dart';
@@ -217,5 +218,20 @@ class ImageUtils {
     image_lib.Point p2 = image_lib.Point(rect.right, rect.bottom);
     return Rect.fromLTRB(min(p1.x, p2.x) as double, min(p1.y, p2.y) as double,
         max(p1.x, p2.x) as double, max(p1.y, p2.y) as double);
+  }
+
+  static Float32List toByteListFloat32(image_lib.Image image, int inputSize) {
+    var convertedBytes = Float32List(1 * inputSize * inputSize * 3);
+    var buffer = Float32List.view(convertedBytes.buffer);
+    int pixelIndex = 0;
+    for (var i = 0; i < inputSize; i++) {
+      for (var j = 0; j < inputSize; j++) {
+        var pixel = image.getPixel(j, i);
+        buffer[pixelIndex++] = (pixel.r / 127.5) - 1;
+        buffer[pixelIndex++] = (pixel.g / 127.5) - 1;
+        buffer[pixelIndex++] = (pixel.b / 127.5) - 1;
+      }
+    }
+    return convertedBytes;
   }
 }

@@ -4,6 +4,8 @@ import 'dart:isolate';
 import 'package:camera/camera.dart';
 import 'package:image/image.dart' as image_lib;
 import 'package:object_detection/tflite/classifier.dart';
+import 'package:object_detection/tflite/recognition.dart';
+import 'package:object_detection/tflite/stats.dart';
 import 'package:object_detection/utils/image_utils.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 
@@ -47,7 +49,7 @@ class IsolateUtils {
           image = image_lib.copyRotate(image, angle: 90);
         }
 
-        Map<String, dynamic>? results = classifier.predict(image);
+        (Recognition, Stats)? results = classifier.predict(image);
         isolateData.responsePort.send(results);
       }
     }
